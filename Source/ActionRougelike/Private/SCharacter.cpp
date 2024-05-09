@@ -1,49 +1,86 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "SCharacter.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
-
-// Sets default values
+#include "GameFramework/CharacterMovementComponent.h"
+ 
 ASCharacter::ASCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+ 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>("SpringArmComp");
+	SpringArmComp->bUsePawnControlRotation = true;
 	SpringArmComp->SetupAttachment(RootComponent);
-
+ 
 	CameraComp = CreateDefaultSubobject<UCameraComponent>("CameraComp");
 	CameraComp->SetupAttachment(SpringArmComp);
+ 
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	bUseControllerRotationYaw = false;
 }
-
-// Called when the game starts or when spawned
+ 
 void ASCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
-
-void ASCharacter::MoveForward(float Value)
+ 
+// 角色向前移动
+void ASCharacter::MoveForward(float value)
 {
-	AddMovementInput(GetActorForwardVector(), Value);
+	FRotator ControlRot = GetControlRotation();
+	// 转向只关注水平Yaw方向，因此置0防止影响
+	ControlRot.Pitch = 0;
+	ControlRot.Roll = 0;
+	// 获取相机（鼠标控制器）的朝向，并朝这个方向移动
+	AddMovementInput(ControlRot.Vector(), value);
+}
+ 
+// 角色向右移动
+void ASCharacter::MoveRight(float value)
+{
+	FRotator ControlRot = GetControlRotation();
+	ControlRot.Pitch = 0;
+	ControlRot.Roll = 0;
+	// 获取相机（鼠标控制器）的朝向，转向右侧，并朝这个方向移动
+	FVector RightVector = FRotationMatrix(ControlRot).GetScaledAxis(EAxis::Y);
+	AddMovementInput(RightVector, value);
 }
 
-// Called every frame
+void ASCharacter::PrimaryAttack()
+{
+	// Spawn Transform Matrix， spawn的变换矩阵
+	FVector RightHandLoc = GetMesh()->GetSocketLocation("Muzzle_01");
+	// 朝向角色方向，在角色的中心位置生成
+	// FTransform SpawnTM = FTransform(GetActorRotation(),GetActorLocation());
+
+	// 朝向角色方向，在角色的右手位置生成
+	FTransform SpawnTM = FTransform(GetActorRotation(),RightHandLoc);
+
+	// 参数设置。
+	// 此处设置碰撞检测规则为：即使碰撞也总是生成，因为粒子在角色中间生成必然碰撞
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+ 
+	// 所有能放置或生成的对象都是Actor
+	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+}
+
 void ASCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
-
-// Called to bind functionality to input
+ 
 void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
+ 
+	// “UE中调用的名称”，this指针表示移动这个角色，&自定义移动方法
 	PlayerInputComponent->BindAxis("MoveForward", this, &ASCharacter::MoveForward);
-
+	PlayerInputComponent->BindAxis("MoveRight", this, &ASCharacter::MoveRight);
+ 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	
+	// 绑定按键动作("UE中调用的名称"；触发的时机如按下或释放；对象；具体方法实现)
+	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &ASCharacter::PrimaryAttack);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASCharacter::Jump);
 }
-

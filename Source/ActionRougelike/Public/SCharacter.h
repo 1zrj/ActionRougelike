@@ -19,7 +19,10 @@ public:
 	ASCharacter();
 
 protected:
-
+	// 投射体子类
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AActor> ProjectileClass;
+	
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringArmComp;
 	
@@ -28,7 +31,11 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	void MoveForward(float X);
+	void MoveForward(float Value);
+
+	void MoveRight(float Value);
+
+	void PrimaryAttack();
 	
 public:	
 	// Called every frame
