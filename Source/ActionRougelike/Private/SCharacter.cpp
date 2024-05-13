@@ -16,6 +16,8 @@ ASCharacter::ASCharacter()
  
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bUseControllerRotationYaw = false;
+
+	InteractionComp = CreateDefaultSubobject<USInteractionComponent>("InteractionComp");
 }
  
 void ASCharacter::BeginPlay()
@@ -64,6 +66,14 @@ void ASCharacter::PrimaryAttack()
 	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
 }
 
+void ASCharacter::PrimaryInteract()
+{
+	if(InteractionComp)
+	{
+		InteractionComp->PrimaryInteract();
+	}
+}
+
 void ASCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -83,4 +93,5 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	// 绑定按键动作("UE中调用的名称"；触发的时机如按下或释放；对象；具体方法实现)
 	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &ASCharacter::PrimaryAttack);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASCharacter::Jump);
+	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &ASCharacter::PrimaryInteract);
 }
