@@ -15,14 +15,19 @@ class ACTIONROUGELIKE_API ASCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+protected:
+	// 投射体子类
+	UPROPERTY(EditAnywhere, Category="Attack")
+	TSubclassOf<AActor> ProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category="Attack")
+	UAnimMontage* AttackAnim;
+	
 public:
 	// Sets default values for this character's properties
 	ASCharacter();
 
 protected:
-	// 投射体子类
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AActor> ProjectileClass;
 	
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringArmComp;
@@ -34,6 +39,9 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	USInteractionComponent* InteractionComp;
 
+	//定时器
+	FTimerHandle TimerHandle_PrimaryAttack;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -44,6 +52,8 @@ protected:
 	void PrimaryAttack();
 
 	void PrimaryInteract();
+
+	void PrimaryAttack_TimeElapsed();
 	
 public:	
 	// Called every frame

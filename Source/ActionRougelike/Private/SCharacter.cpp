@@ -49,6 +49,14 @@ void ASCharacter::MoveRight(float value)
 
 void ASCharacter::PrimaryAttack()
 {
+	PlayAnimMontage(AttackAnim);
+
+	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::PrimaryAttack_TimeElapsed, 0.2f);
+}
+
+// 延迟生成攻击体
+void ASCharacter::PrimaryAttack_TimeElapsed()
+{
 	// Spawn Transform Matrix， spawn的变换矩阵
 	FVector RightHandLoc = GetMesh()->GetSocketLocation("Muzzle_01");
 	// 朝向角色方向，在角色的中心位置生成
