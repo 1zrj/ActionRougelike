@@ -36,6 +36,6 @@ void ASItemChest::Tick(float DeltaTime)
 
 void ASItemChest::Interact_Implementation(APawn* InstigatorPawn)
 {
-	LidMesh->SetRelativeRotation(FRotator(0, 0, -50));
+	LidMesh->SetRelativeRotation(FRotator(-0, 0, -50));
 }
 
